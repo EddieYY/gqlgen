@@ -125,7 +125,7 @@ Reasons to use gqlgen instead:
  - arrays work just fine https://github.com/neelance/graphql-go/issues/144
  - first class dataloader support, see examples/dataloader
 
-https://github.com/neelance/graphql-go
+see https://github.com/neelance/graphql-go
 
 #### graphql-go/graphql
 

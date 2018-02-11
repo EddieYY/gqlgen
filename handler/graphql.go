@@ -4,8 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"io"
+	"log"
 	"net/http"
 
+	"strings"
+
+	"github.com/gorilla/websocket"
 	"github.com/vektah/gqlgen/neelance/errors"
 )
 
@@ -15,6 +19,11 @@ type errorResponse struct {
 	Errors []*errors.QueryError `json:"errors"`
 }
 
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+}
+
 func GraphQL(resolver Executor) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var params struct {
@@ -22,6 +31,21 @@ func GraphQL(resolver Executor) http.HandlerFunc {
 			OperationName string                 `json:"operationName"`
 			Variables     map[string]interface{} `json:"variables"`
 		}
+
+		if strings.Contains(r.Header["Upgrade"], "websocket") {
+		}
+		conn, err := upgrader.Upgrade(w, r, nil)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256)}
+		client.hub.register <- client
+
+		// Allow collection of memory referenced by the caller by doing all work in
+		// new goroutines.
+		go client.writePump()
+		go client.readPump()
 
 		w.Header().Set("Content-Type", "application/json")
 

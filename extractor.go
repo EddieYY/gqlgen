@@ -16,16 +16,17 @@ import (
 )
 
 type extractor struct {
-	Errors       []string
-	PackageName  string
-	Objects      []*object
-	Interfaces   []*object
-	goTypeMap    map[string]string
-	Imports      map[string]string // local -> full path
-	schema       *schema.Schema
-	SchemaRaw    string
-	QueryRoot    string
-	MutationRoot string
+	Errors           []string
+	PackageName      string
+	Objects          []*object
+	Interfaces       []*object
+	goTypeMap        map[string]string
+	Imports          map[string]string // local -> full path
+	schema           *schema.Schema
+	SchemaRaw        string
+	QueryRoot        string
+	MutationRoot     string
+	SubscriptionRoot string
 }
 
 func (e *extractor) extract() {
@@ -84,6 +85,10 @@ func (e *extractor) extract() {
 		if name == "mutation" {
 			e.MutationRoot = obj.Name
 			e.GetObject(obj.Name).DisableConcurrency = true
+		}
+		if name == "subscription" {
+			e.SubscriptionRoot = obj.Name
+			e.GetObject(obj.Name).Stream = true
 		}
 	}
 

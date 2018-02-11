@@ -76,6 +76,7 @@ type object struct {
 	satisfies          []string
 	Root               bool
 	DisableConcurrency bool
+	Stream             bool
 }
 
 type Field struct {
@@ -109,7 +110,13 @@ func (f *Field) ResolverDeclaration() string {
 		res += fmt.Sprintf(", %s %s", arg.Name, arg.Type.Local())
 	}
 
-	res += fmt.Sprintf(") (%s, error)", f.Type.Local())
+	result := f.Type.Local()
+	if f.Object.Stream {
+		result = "<-" + result
+	}
+
+	res += fmt.Sprintf(") (%s, error)", result)
+
 	return res
 }
 
